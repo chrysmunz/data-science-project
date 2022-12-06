@@ -7,8 +7,10 @@ runtime: shiny
 
 ```{r setup, include = FALSE}
 library(ggplot2)
+library(dplyr)
 library(lubridate)
 library(scales)
+library(DT)
 ```
 
 ---
