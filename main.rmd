@@ -1,0 +1,94 @@
+---
+title: "Projeto de Data Science"
+subtitle: "Análise de Dados Uber"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include = FALSE}
+library(ggplot2)
+library(lubridate)
+library(scales)
+```
+
+---
+author:
+- name: Chrystian Marcell Munz - 152063@upf.br
+  affiliation: Universidade de Passo Fundo
+---
+
+- Esse projeto tem como objetivo realizar uma análise do histórico de operações da Uber para entender e visualizar dados complexos que ajudariam na tomada de decisões da empresa em relação ao seu serviço. Será utilizado o `ggplot2` no conjunto de dados Uber Pickups para realizar a visualição dos dados em R.
+
+- Repositório no GitHub: https://github.com/chrysmunz/data-science-project
+
+- O conjunto de dados utilizados nesse projeto está disponível em: https://drive.google.com/file/d/1emopjfEkTt59jJoBH9L9bSdmlDC4AR87/view
+
+- Foram utilizados dados de viagens do mês de abril até setembro do ano de 2014. Através dessa base de dados foram criados grupos de dados de viagens por hora, dia e mês para realizar listagem detalhadas de cada grupo e comparativos entre esses números a partir de gráficos.
+
+```{r, echo = FALSE}
+abril <- read.csv("uber-raw-data-apr14.csv")
+maio <- read.csv("uber-raw-data-may14.csv")
+junho <- read.csv("uber-raw-data-jun14.csv")
+julho <- read.csv("uber-raw-data-jul14.csv")
+agosto <- read.csv("uber-raw-data-aug14.csv")
+setembro <- read.csv("uber-raw-data-sep14.csv")
+
+data_2014 <- rbind(abril,maio, junho, julho, agosto, setembro)
+data_2014$Date.Time <- as.POSIXct(data_2014$Date.Time, format = "%m/%d/%Y %H:%M:%S")
+data_2014$Time <- format(as.POSIXct(data_2014$Date.Time, format = "%m/%d/%Y %H:%M:%S"), format="%H:%M:%S")
+data_2014$Date.Time <- ymd_hms(data_2014$Date.Time)
+data_2014$day <- factor(day(data_2014$Date.Time))
+data_2014$month <- factor(month(data_2014$Date.Time, label = TRUE))
+data_2014$year <- factor(year(data_2014$Date.Time))
+data_2014$dayofweek <- factor(wday(data_2014$Date.Time, label = TRUE))
+data_2014$hour <- factor(hour(hms(data_2014$Time)))
+data_2014$minute <- factor(minute(hms(data_2014$Time)))
+data_2014$second <- factor(second(hms(data_2014$Time)))
+```
+
+```{r, echo = FALSE}
+dados_por_hora <- data_2014 %>%
+  group_by(hour) %>%
+  dplyr::summarize(Total = n()) 
+
+datatable(dados_por_hora)
+```
+
+```{r, echo = TRUE}
+ggplot(dados_por_hora, aes(hour, Total)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Viagens por Hora") +
+  scale_y_continuous(labels = comma)
+```
+
+```{r, echo = FALSE}
+dados_por_dia <- data_2014 %>%
+  group_by(day) %>%
+  dplyr::summarize(Total = n())
+
+datatable(dados_por_dia)
+```
+
+```{r, echo = TRUE}
+ggplot(dados_por_dia, aes(day, Total)) +
+  geom_bar( stat = "identity") +
+  ggtitle("Viagens por Dia") +
+  scale_y_continuous(labels = comma)
+```
+
+```{r, echo = FALSE}
+dados_por_mes <- data_2014 %>%
+  group_by(month) %>%
+  dplyr::summarize(Total = n()) 
+
+datatable(dados_por_mes)
+```
+
+```{r, echo = TRUE}
+ggplot(dados_por_mes, aes(month, Total, fill = month)) +
+  geom_bar( stat = "identity") +
+  ggtitle("Viagens por Mês") +
+  scale_y_continuous(labels = comma)
+```
+
+- Com os resultados de dados obtidos durante esse projeto foi possível gerar diversos gráficos com informações relevantes referentes as viagens realizadas durante o período de tempo desejado. A partir disso é possível estabelecer métricas entre esses períodos e como o tempo afetou as diversas viagens realizadas pela uber melhorando cada vez mais seu serviço.
